@@ -1,140 +1,140 @@
-import streamlit as st
-import cv2
-import numpy as np
-from PIL import Image
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-from Functions import *
-from Sudoku_Solver import *
-from Sudoku_Init import *
-from PreProcess import *
+# import streamlit as st
+# import cv2
+# import numpy as np
+# from PIL import Image
+# import os
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# from Functions import *
+# from Sudoku_Solver import *
+# from Sudoku_Init import *
+# from PreProcess import *
 
-########################################################################
-pathImage = "download.jpeg"
-heightImg = 450
-widthImg = 450
-model = intializePredectionModel()  # LOAD THE CNN MODEL
-########################################################################
+# ########################################################################
+# pathImage = "download.jpeg"
+# heightImg = 450
+# widthImg = 450
+# model = intializePredectionModel()  # LOAD THE CNN MODEL
+# ########################################################################
 
-# Streamlit app configuration
-st.set_page_config(layout="wide")
-st.title("Sudoku Solver")
+# # Streamlit app configuration
+# st.set_page_config(layout="wide")
+# st.title("Sudoku Solver")
 
 
-with st.sidebar:
-    st.header("Upload Sudoku Image")
-    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+# with st.sidebar:
+#     st.header("Upload Sudoku Image")
+#     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
     
-    if uploaded_file is not None:
-        with open("temp.jpg", "wb") as f:
-            f.write(uploaded_file.getbuffer())
+#     if uploaded_file is not None:
+#         with open("temp.jpg", "wb") as f:
+#             f.write(uploaded_file.getbuffer())
         
-        st.success("Image uploaded successfully!")
-    else:
-        st.info("Please upload a Sudoku puzzle image")
-col1, col2 = st.columns(2)
+#         st.success("Image uploaded successfully!")
+#     else:
+#         st.info("Please upload a Sudoku puzzle image")
+# col1, col2 = st.columns(2)
 
-# if uploaded_file is not None:
-#     # Process the image
-#     heightImg = 450
-#     widthImg = 450
+# # if uploaded_file is not None:
+# #     # Process the image
+# #     heightImg = 450
+# #     widthImg = 450
     
+# #     with col1:
+# #         st.header("Original Sudoku")
+        
+# #         # Display original image
+# #         img = cv2.imread("temp.jpg")
+# #### 1. PREPARE THE IMAGE
+# # img = cv2.imread(pathImage)
+# img = cv2.imread("temp.jpg")
+# if img is not None:
+#     img = cv2.resize(img, (widthImg, heightImg))  # RESIZE IMAGE TO MAKE IT A SQUARE IMAGE
+#     imgBlank = np.zeros((heightImg, widthImg, 3), np.uint8)  # CREATE A BLANK IMAGE FOR TESTING DEBUGING IF REQUIRED
+#     imgThreshold = preProcess(img)
 #     with col1:
-#         st.header("Original Sudoku")
+#         st.header("Orginal Sudoku")
+#         st.image(img, channels="BGR", caption="Uploaded Sudoku")
+
+#     # #### 2. FIND ALL COUNTOURS
+#     imgContours = img.copy() # COPY IMAGE FOR DISPLAY PURPOSES
+#     imgBigContour = img.copy() # COPY IMAGE FOR DISPLAY PURPOSES
+#     contours, hierarchy = cv2.findContours(imgThreshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # FIND ALL CONTOURS
+#     cv2.drawContours(imgContours, contours, -1, (0, 255, 0), 3) # DRAW ALL DETECTED CONTOURS
+
+#     #### 3. FIND THE BIGGEST COUNTOUR AND USE IT AS SUDOKU
+#     biggest, maxArea = biggestContour(contours) # FIND THE BIGGEST CONTOUR
+#     print(biggest)
+#     if biggest.size != 0:
+#         biggest = reorder(biggest)
+#         print(biggest)
+#         cv2.drawContours(imgBigContour, biggest, -1, (0, 0, 255), 25) # DRAW THE BIGGEST CONTOUR
+#         pts1 = np.float32(biggest) # PREPARE POINTS FOR WARP
+#         pts2 = np.float32([[0, 0],[widthImg, 0], [0, heightImg],[widthImg, heightImg]]) # PREPARE POINTS FOR WARP
+#         matrix = cv2.getPerspectiveTransform(pts1, pts2) # GER
+#         imgWarpColored = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
+#         imgDetectedDigits = imgBlank.copy()
+#         imgWarpColored = cv2.cvtColor(imgWarpColored,cv2.COLOR_BGR2GRAY)
+
+#         #### 4. SPLIT THE IMAGE AND FIND EACH DIGIT AVAILABLE
+#         imgSolvedDigits = imgBlank.copy()
+#         boxes = splitBoxes(imgWarpColored)
+#         print(len(boxes))
+#         # cv2.imshow("Sample",boxes[65])
+#         numbers = getPredection(boxes, model)
+#         print(numbers)
+#         imgDetectedDigits = displayNumbers(imgDetectedDigits, numbers, color=(255, 0, 255))
+#         numbers = np.asarray(numbers)
+#         posArray = np.where(numbers > 0, 0, 1)
+#         print(posArray)
+
+
+#         #### 5. FIND SOLUTION OF THE BOARD
+#         board = np.array_split(numbers,9)
+#         print(board)
+#         try:
+#             solve(board)
+#         except:
+#             pass
+#         print(board)
+#         flatList = []
+#         for sublist in board:
+#             for item in sublist:
+#                 flatList.append(item)
+#         solvedNumbers =flatList*posArray
+#         imgSolvedDigits= displayNumbers(imgSolvedDigits,solvedNumbers)
+
+#         # #### 6. OVERLAY SOLUTION
+#         pts2 = np.float32(biggest) # PREPARE POINTS FOR WARP
+#         pts1 =  np.float32([[0, 0],[widthImg, 0], [0, heightImg],[widthImg, heightImg]]) # PREPARE POINTS FOR WARP
+#         matrix = cv2.getPerspectiveTransform(pts1, pts2)  # GER
+#         imgInvWarpColored = img.copy()
+#         imgInvWarpColored = cv2.warpPerspective(imgSolvedDigits, matrix, (widthImg, heightImg))
+#         inv_perspective = cv2.addWeighted(imgInvWarpColored, 1, img, 0.5, 1)
+#         imgDetectedDigits = drawGrid(imgDetectedDigits)
+#         imgSolvedDigits = drawGrid(imgSolvedDigits)
+
+#         imageArray = ([img,imgThreshold,imgContours, imgBigContour],
+#                     [imgDetectedDigits, imgSolvedDigits,imgInvWarpColored,inv_perspective])
+#         stackedImage = stackImages(imageArray, 1)
+#         cv2.imshow('Stacked Images', stackedImage)
+#         cv2.imshow('Solved', inv_perspective)
         
-#         # Display original image
-#         img = cv2.imread("temp.jpg")
-#### 1. PREPARE THE IMAGE
-# img = cv2.imread(pathImage)
-img = cv2.imread("temp.jpg")
-if img is not None:
-    img = cv2.resize(img, (widthImg, heightImg))  # RESIZE IMAGE TO MAKE IT A SQUARE IMAGE
-    imgBlank = np.zeros((heightImg, widthImg, 3), np.uint8)  # CREATE A BLANK IMAGE FOR TESTING DEBUGING IF REQUIRED
-    imgThreshold = preProcess(img)
-    with col1:
-        st.header("Orginal Sudoku")
-        st.image(img, channels="BGR", caption="Uploaded Sudoku")
-
-    # #### 2. FIND ALL COUNTOURS
-    imgContours = img.copy() # COPY IMAGE FOR DISPLAY PURPOSES
-    imgBigContour = img.copy() # COPY IMAGE FOR DISPLAY PURPOSES
-    contours, hierarchy = cv2.findContours(imgThreshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # FIND ALL CONTOURS
-    cv2.drawContours(imgContours, contours, -1, (0, 255, 0), 3) # DRAW ALL DETECTED CONTOURS
-
-    #### 3. FIND THE BIGGEST COUNTOUR AND USE IT AS SUDOKU
-    biggest, maxArea = biggestContour(contours) # FIND THE BIGGEST CONTOUR
-    print(biggest)
-    if biggest.size != 0:
-        biggest = reorder(biggest)
-        print(biggest)
-        cv2.drawContours(imgBigContour, biggest, -1, (0, 0, 255), 25) # DRAW THE BIGGEST CONTOUR
-        pts1 = np.float32(biggest) # PREPARE POINTS FOR WARP
-        pts2 = np.float32([[0, 0],[widthImg, 0], [0, heightImg],[widthImg, heightImg]]) # PREPARE POINTS FOR WARP
-        matrix = cv2.getPerspectiveTransform(pts1, pts2) # GER
-        imgWarpColored = cv2.warpPerspective(img, matrix, (widthImg, heightImg))
-        imgDetectedDigits = imgBlank.copy()
-        imgWarpColored = cv2.cvtColor(imgWarpColored,cv2.COLOR_BGR2GRAY)
-
-        #### 4. SPLIT THE IMAGE AND FIND EACH DIGIT AVAILABLE
-        imgSolvedDigits = imgBlank.copy()
-        boxes = splitBoxes(imgWarpColored)
-        print(len(boxes))
-        # cv2.imshow("Sample",boxes[65])
-        numbers = getPredection(boxes, model)
-        print(numbers)
-        imgDetectedDigits = displayNumbers(imgDetectedDigits, numbers, color=(255, 0, 255))
-        numbers = np.asarray(numbers)
-        posArray = np.where(numbers > 0, 0, 1)
-        print(posArray)
-
-
-        #### 5. FIND SOLUTION OF THE BOARD
-        board = np.array_split(numbers,9)
-        print(board)
-        try:
-            solve(board)
-        except:
-            pass
-        print(board)
-        flatList = []
-        for sublist in board:
-            for item in sublist:
-                flatList.append(item)
-        solvedNumbers =flatList*posArray
-        imgSolvedDigits= displayNumbers(imgSolvedDigits,solvedNumbers)
-
-        # #### 6. OVERLAY SOLUTION
-        pts2 = np.float32(biggest) # PREPARE POINTS FOR WARP
-        pts1 =  np.float32([[0, 0],[widthImg, 0], [0, heightImg],[widthImg, heightImg]]) # PREPARE POINTS FOR WARP
-        matrix = cv2.getPerspectiveTransform(pts1, pts2)  # GER
-        imgInvWarpColored = img.copy()
-        imgInvWarpColored = cv2.warpPerspective(imgSolvedDigits, matrix, (widthImg, heightImg))
-        inv_perspective = cv2.addWeighted(imgInvWarpColored, 1, img, 0.5, 1)
-        imgDetectedDigits = drawGrid(imgDetectedDigits)
-        imgSolvedDigits = drawGrid(imgSolvedDigits)
-
-        imageArray = ([img,imgThreshold,imgContours, imgBigContour],
-                    [imgDetectedDigits, imgSolvedDigits,imgInvWarpColored,inv_perspective])
-        stackedImage = stackImages(imageArray, 1)
-        cv2.imshow('Stacked Images', stackedImage)
-        cv2.imshow('Solved', inv_perspective)
-        
-        with col2:
-                st.header("Solved Sudoku")
-                st.image(inv_perspective, channels="BGR", caption="Solved Sudoku")
+#         with col2:
+#                 st.header("Solved Sudoku")
+#                 st.image(inv_perspective, channels="BGR", caption="Solved Sudoku")
                 
-                # Add download button for the solved image
-                solved_img = Image.fromarray(cv2.cvtColor(inv_perspective, cv2.COLOR_BGR2RGB))
-                st.download_button(
-                    label="Download Solved Image",
-                    data=cv2.imencode('.jpg', inv_perspective)[1].tobytes(),
-                    file_name="solved_sudoku.jpg",
-                    mime="image/jpeg"
-                )
-    else:
-        st.error("Could not detect a Sudoku grid in the image")
-else:
-    st.info("Please upload a Sudoku puzzle image to get started")
+#                 # Add download button for the solved image
+#                 solved_img = Image.fromarray(cv2.cvtColor(inv_perspective, cv2.COLOR_BGR2RGB))
+#                 st.download_button(
+#                     label="Download Solved Image",
+#                     data=cv2.imencode('.jpg', inv_perspective)[1].tobytes(),
+#                     file_name="solved_sudoku.jpg",
+#                     mime="image/jpeg"
+#                 )
+#     else:
+#         st.error("Could not detect a Sudoku grid in the image")
+# else:
+#     st.info("Please upload a Sudoku puzzle image to get started")
 
 
 # from flask import Flask, request, send_file, jsonify
@@ -214,3 +214,95 @@ else:
 # if __name__ == "__main__":
 #     app.run()
 
+
+
+import streamlit as st
+import numpy as np
+from PIL import Image
+from skimage import color, filters, measure, transform, img_as_ubyte
+
+from Functions import *
+from Sudoku_Solver import *
+from Sudoku_Init import *
+from PreProcess import *  # Needs to be rewritten if using cv2 inside
+
+heightImg, widthImg = 450, 450
+model = intializePredectionModel()
+
+st.set_page_config(layout="wide")
+st.title("Sudoku Solver (No OpenCV)")
+
+with st.sidebar:
+    uploaded_file = st.file_uploader("Upload Sudoku Image", type=["jpg", "jpeg", "png"])
+    if uploaded_file:
+        st.success("Image uploaded successfully!")
+    else:
+        st.info("Please upload a Sudoku puzzle image")
+
+col1, col2 = st.columns(2)
+
+if uploaded_file:
+    # Load and resize
+    img_pil = Image.open(uploaded_file).convert("RGB")
+    img_pil = img_pil.resize((widthImg, heightImg))
+    img_np = np.array(img_pil)
+
+    with col1:
+        st.header("Original Sudoku")
+        st.image(img_pil, caption="Uploaded Sudoku")
+
+    # Preprocess (threshold)
+    gray = color.rgb2gray(img_np)
+    thresh = gray < filters.threshold_otsu(gray)
+
+    # Find contours
+    contours = measure.find_contours(thresh.astype(float), 0.5)
+    biggest = max(contours, key=len) if contours else None
+
+    if biggest is not None:
+        # Approximate bounding box for perspective transform
+        minr, minc = np.min(biggest, axis=0)
+        maxr, maxc = np.max(biggest, axis=0)
+        src = np.array([[minc, minr], [maxc, minr], [minc, maxr], [maxc, maxr]])
+        dst = np.array([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])
+
+        tform = transform.ProjectiveTransform()
+        tform.estimate(dst, src)
+        warped = transform.warp(img_np, tform, output_shape=(heightImg, widthImg))
+        warped_gray = color.rgb2gray(warped)
+
+        # Split into boxes and predict
+        boxes = splitBoxes((warped_gray * 255).astype(np.uint8))
+        numbers = getPredection(boxes, model)
+        posArray = np.where(np.array(numbers) > 0, 0, 1)
+
+        # Solve
+        board = np.array_split(numbers, 9)
+        try:
+            solve(board)
+        except:
+            pass
+
+        solved_flat = [num for row in board for num in row]
+        solvedNumbers = solved_flat * posArray
+
+        solved_img = displayNumbers(np.zeros_like(img_np), solvedNumbers)
+
+        # Warp back
+        tform_inv = transform.ProjectiveTransform()
+        tform_inv.estimate(src, dst)
+        inv_warp = transform.warp(solved_img, tform_inv, output_shape=(heightImg, widthImg))
+
+        # Blend images
+        blended = np.clip(inv_warp * 255 + img_np * 0.5, 0, 255).astype(np.uint8)
+
+        with col2:
+            st.header("Solved Sudoku")
+            st.image(blended, caption="Solved Sudoku")
+            st.download_button(
+                "Download Solved Image",
+                data=Image.fromarray(blended).tobytes(),
+                file_name="solved_sudoku.png"
+            )
+    else:
+        st.error("Could not detect Sudoku grid")
